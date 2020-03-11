@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; background-color:beige;}
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; border-radius: 20px;}
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; height: 70px; border-radius: 20px; font-size: 20px;}
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; border-radius: 25px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; border:1px solid black; border-radius: 20px;}
+      #messages li:nth-child(odd) { background: #eee; }
+      #messages { margin-bottom: 40px }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+        var startTime;
+          var time=0;
+          var count=0;
+          setInterval(function() {
+          startTime = Date.now();
+          socket.emit('ping');},1000);
+          console.log("Time latency goes here : ");
+        socket.on('pong', function() {
+          latency = Date.now() - startTime;
+            time=time+latency;
+            count=count+1;
+          console.log(latency);
+        });
+          setInterval(function(){
+             var avg=time/count;
+              console.log("Average latency till now : "+avg);
+          },5000);
+        $('form').submit(function(){
+          socket.emit('chat message', $('#m').val());
+          $('#m').val('');
+          return false;
+        });
+        socket.on('chat message', function(msg){
+          $('#messages').append($('<li>').text(msg));
+          window.scrollTo(0,document.body.scrollHeight);
+        });
+          socket.on('is_online', function(username) {
+                $('#messages').append($('<li>').html(username));
+            });
+            // ask username
+            var username = prompt('Please tell me your name');
+            socket.emit('username', username);
+      });
+    </script>
+  </body>
+</html>
